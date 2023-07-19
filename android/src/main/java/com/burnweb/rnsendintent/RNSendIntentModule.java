@@ -585,26 +585,64 @@ public class RNSendIntentModule extends ReactContextBaseJavaModule {
         }
     }
 
-    @ReactMethod
+    // @ReactMethod
+    // public void openAppWithData(String packageName, String dataUri, String mimeType, ReadableMap extras, final Promise promise) {
+    //     Uri uri = Uri.parse(dataUri);
+    //     Intent sendIntent = new Intent(Intent.ACTION_VIEW);
+    //     if (mimeType != null)
+    //         sendIntent.setDataAndType(uri, mimeType);
+    //     else
+    //         sendIntent.setData(uri);
+
+    //     sendIntent.setPackage(packageName);
+
+    //     if (!parseExtras(extras, sendIntent)) {
+    //         promise.resolve(false);
+    //         return;
+    //     }
+
+    //     //sendIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+    //     sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    //     this.reactContext.startActivity(sendIntent);
+    //     promise.resolve(true);
+    // }
+
     public void openAppWithData(String packageName, String dataUri, String mimeType, ReadableMap extras, final Promise promise) {
-        Uri uri = Uri.parse(dataUri);
-        Intent sendIntent = new Intent(Intent.ACTION_VIEW);
-        if (mimeType != null)
-            sendIntent.setDataAndType(uri, mimeType);
-        else
-            sendIntent.setData(uri);
+        try {
+            Uri uri = Uri.parse(dataUri);
+            Intent sendIntent = new Intent(Intent.ACTION_VIEW);
+            if (mimeType != null)
+                sendIntent.setDataAndType(uri, mimeType);
+            else
+                sendIntent.setData(uri);
 
-        sendIntent.setPackage(packageName);
+            sendIntent.setPackage(packageName);
 
-        if (!parseExtras(extras, sendIntent)) {
+            if (!parseExtras(extras, sendIntent)) {
+                promise.resolve(false);
+                return;
+            }
+
+            Intent existPackage = this.reactContext.getPackageManager().getLaunchIntentForPackage(sendIntent.getPackage());
+            if (existPackage == null) {
+                promise.resolve(false);
+                return;
+            }
+
+            //sendIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+            sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            if (sendIntent.resolveActivity(this.reactContext.getPackageManager()) != null) {
+                this.reactContext.startActivity(sendIntent);
+                promise.resolve(true);
+            } else {
+                promise.resolve(false);
+                return;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
             promise.resolve(false);
-            return;
         }
-
-        //sendIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-        sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        this.reactContext.startActivity(sendIntent);
-        promise.resolve(true);
     }
 
     @ReactMethod
