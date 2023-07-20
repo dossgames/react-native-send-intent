@@ -607,6 +607,7 @@ public class RNSendIntentModule extends ReactContextBaseJavaModule {
     //     promise.resolve(true);
     // }
 
+    @ReactMethod
     public void openAppWithData(String packageName, String dataUri, String mimeType, ReadableMap extras, final Promise promise) {
         try {
             Uri uri = Uri.parse(dataUri);
